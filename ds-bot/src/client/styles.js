@@ -1,13 +1,7 @@
-import { INKS } from "./inks.js";
-import { DEFAULT_MASK } from "./characters.js";
-import { MENTION_ORIGIN } from "./text.js";
-import {
- SPRING_SHAPE,
- SPRING_TAP,
- SPRING_STRETCH,
- SPRING_POP,
- spring,
-} from "./motion.js";
+import { INKS } from './inks.js'
+import { DEFAULT_MASK } from './characters.js'
+import { MENTION_ORIGIN } from './text.js'
+import { SPRING_SHAPE, SPRING_TAP, SPRING_STRETCH, SPRING_POP, spring } from './motion.js'
 
 // The pill stretches for "Memory updated" on SPRING_STRETCH, and its icon pops on
 // SPRING_POP; it closes on SPRING_SHAPE.
@@ -15,8 +9,7 @@ import {
 // A sidebar skin may seat DSH's footer outlets in a footer of its own; matching the
 // outlets keeps that footer on one row whatever the skin names its boxes. The shell's
 // own footer is left to the _footArea rules, which lay it out differently.
-const SKIN_FOOT =
- ':is(div,footer):not([class*="_footArea"]):has(> div > [data-slot="sidebar.footer.action"] > .bt-connect-wrap)';
+const SKIN_FOOT = ':is(div,footer):not([class*="_footArea"]):has(> div > [data-slot="sidebar.footer.action"] > .bt-connect-wrap)'
 
 // The base styles split the way the surface groups do. SHELL_CSS carries the marks,
 // the Bot sidebar, every overlay, and the shell chrome they reshape; markup shared
@@ -27,14 +20,8 @@ const SKIN_FOOT =
 export const SHELL_CSS = `
 body{--bt-ink:#141414;--bt-ink-2:rgba(20,20,20,.6);--bt-ink-3:rgba(20,20,20,.36);--bt-bubble:#eeeeee;--bt-sidebar:#f7f7f7;--bt-main:#fcfcfc;--bt-line:rgba(20,20,20,.08);--bt-line-2:rgba(20,20,20,.15);--bt-line-weak:rgba(20,20,20,.1);--bt-hover:rgba(119,119,119,.09);--bt-active:rgba(119,119,119,.17);--bt-card:#ffffff;--bt-accent:#4d6bfe;--bt-green:#00c972;--bt-star:#ff9800;--bt-user:#070707;--bt-user-ink:#fcfcfc;--bt-tag-bg:rgba(20,20,20,.06);--bt-tag-ink:rgba(20,20,20,.56)}
 body[data-ds-dark-theme]{--bt-ink:#f2f2f2;--bt-ink-2:rgba(242,242,242,.6);--bt-ink-3:rgba(242,242,242,.36);--bt-bubble:#262626;--bt-sidebar:#1b1b1b;--bt-main:#141414;--bt-line:rgba(255,255,255,.08);--bt-line-2:rgba(255,255,255,.15);--bt-line-weak:rgba(255,255,255,.1);--bt-hover:rgba(160,160,160,.12);--bt-active:rgba(160,160,160,.2);--bt-card:#1f1f1f;--bt-user:#f2f2f2;--bt-user-ink:#141414;--bt-tag-bg:rgba(255,255,255,.09);--bt-tag-ink:rgba(242,242,242,.62)}
-${Object.entries(INKS)
- .map(([name, [light]]) => `body{--bt-ink-${name}:${light}}`)
- .join("")}
-${Object.entries(INKS)
- .map(
-  ([name, [, dark]]) => `body[data-ds-dark-theme]{--bt-ink-${name}:${dark}}`,
- )
- .join("")}
+${Object.entries(INKS).map(([name, [light]]) => `body{--bt-ink-${name}:${light}}`).join('')}
+${Object.entries(INKS).map(([name, [, dark]]) => `body[data-ds-dark-theme]{--bt-ink-${name}:${dark}}`).join('')}
 .bt-mark{display:inline-block;flex:none;position:relative;line-height:0}
 .bt-mark svg{width:100%;height:100%;overflow:visible}
 .bt-mark-img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;box-shadow:inset 0 0 0 1px var(--bt-line)}
@@ -171,9 +158,9 @@ body[data-bt-motion=quiet] .bt-mark[data-poke]{cursor:default}
 .bt-pill:hover{background:color-mix(in srgb,var(--bt-main),#777 9%)}
 .bt-pill:active{transform:scale(.965)}
 .bt-pill-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
-.bt-pill-mem{flex:none;display:inline-flex;width:0;margin-left:-8px;overflow:hidden;transition:${spring(SPRING_SHAPE, "width", "margin-left")}}
-.bt-pill[data-memory=updated] .bt-pill-mem{width:var(--bt-mem-w);margin-left:0;transition:${spring(SPRING_STRETCH, "width", "margin-left")}}
-.bt-pill-mem-in{flex:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:var(--bt-ink-2);font-size:13px;font-weight:500;opacity:0;filter:blur(6px);transform:translateX(-8px);transition:opacity .14s ease,filter .18s ease,${spring(SPRING_SHAPE, "transform")}}
+.bt-pill-mem{flex:none;display:inline-flex;width:0;margin-left:-8px;overflow:hidden;transition:${spring(SPRING_SHAPE, 'width', 'margin-left')}}
+.bt-pill[data-memory=updated] .bt-pill-mem{width:var(--bt-mem-w);margin-left:0;transition:${spring(SPRING_STRETCH, 'width', 'margin-left')}}
+.bt-pill-mem-in{flex:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:var(--bt-ink-2);font-size:13px;font-weight:500;opacity:0;filter:blur(6px);transform:translateX(-8px);transition:opacity .14s ease,filter .18s ease,${spring(SPRING_SHAPE, 'transform')}}
 .bt-pill-mem-in::before{content:"";flex:none;width:1px;height:14px;margin-right:4px;background:var(--bt-line-2)}
 .bt-pill[data-memory=updated] .bt-pill-mem-in{opacity:1;filter:none;transform:none;transition-delay:70ms}
 .bt-pill-mem-ico{flex:none;display:inline-flex;width:16px;height:16px;color:var(--bt-accent)}
@@ -208,7 +195,7 @@ button.bt-lead{border:0;background:none;padding:0;cursor:pointer}
 /* Rows without the avatar start where the bubble beside it starts: 22px avatar + 8px gap. */
 .bt-astack[data-lead]>.bt-msg:not(:last-child)>.bt-msg-line,.bt-astack[data-lead] .bt-reacts{margin-left:30px}
 .bt-group-name{font-size:12px;line-height:16px;font-weight:500;margin-left:42px}
-.bt-x{border:0;background:none;color:var(--bt-ink-2);cursor:pointer;width:24px;height:24px;border-radius:6px;font-size:16px;line-height:24px;padding:0;transition:background-color .12s ease,color .12s ease,${spring(SPRING_TAP, "scale")}}
+.bt-x{border:0;background:none;color:var(--bt-ink-2);cursor:pointer;width:24px;height:24px;border-radius:6px;font-size:16px;line-height:24px;padding:0;transition:background-color .12s ease,color .12s ease,${spring(SPRING_TAP, 'scale')}}
 .bt-x:hover{background:var(--bt-hover);color:var(--bt-ink)}
 
 .bt-q{margin:0 auto 8px;width:100%;max-width:var(--dsh-chat-content-width,748px);display:flex;flex-direction:column;gap:12px;--bt-q-edge:color-mix(in srgb,var(--bt-ink) 10%,transparent);--bt-q-rule:color-mix(in srgb,var(--bt-ink) 8%,transparent);--bt-q-rule-2:color-mix(in srgb,var(--bt-ink) 5%,transparent);background:var(--bt-card);box-shadow:0 1px 3px rgba(20,20,20,.04),inset 0 0 0 1px var(--bt-q-edge);border-radius:16px;padding:14px 16px;box-sizing:border-box;color:var(--bt-ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;animation:bt-q-in ${SPRING_SHAPE.duration}ms ${SPRING_SHAPE.easing} backwards,bt-veil-in .2s ease-out backwards}
@@ -219,7 +206,7 @@ body[data-ds-dark-theme] .bt-q{--bt-q-edge:rgba(255,255,255,.16);--bt-q-rule:rgb
 .bt-q-text{flex:1 1 0;min-width:0;display:flex;flex-direction:column}
 .bt-q-title{margin:0;font-size:15px;line-height:22px;font-weight:600;overflow-wrap:anywhere}
 .bt-q-detail{font-size:13px;line-height:18px;color:var(--bt-ink-2)}
-.bt-q-x{flex:none;width:20px;height:20px;border:0;padding:0;border-radius:6px;background:none;color:var(--bt-ink-2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .12s ease,color .12s ease,${spring(SPRING_TAP, "scale")}}
+.bt-q-x{flex:none;width:20px;height:20px;border:0;padding:0;border-radius:6px;background:none;color:var(--bt-ink-2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .12s ease,color .12s ease,${spring(SPRING_TAP, 'scale')}}
 .bt-q-x svg{width:14px;height:14px}
 .bt-q-x:hover{background:var(--bt-hover);color:var(--bt-ink)}
 .bt-q-x:focus-visible,.bt-q-opt:focus-visible{outline:2px solid var(--bt-accent);outline-offset:-2px}
@@ -260,7 +247,7 @@ button.bt-q-opt:active{background:var(--bt-active)}
 .bt-q-input{flex:1;width:100%;min-width:0;max-height:120px;margin:0;padding:0;border:0;outline:none;background:transparent;color:var(--bt-ink);font:inherit;font-size:14px;line-height:20px;resize:none;overflow-y:hidden;white-space:pre-wrap;overflow-wrap:anywhere}
 .bt-q-input:not(:placeholder-shown){field-sizing:content}
 .bt-q-input::placeholder{color:var(--bt-ink-3)}
-.bt-q-submit,.bt-q-btn{flex:none;height:36px;padding:0 14px;border:0;border-radius:999px;font:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .12s ease,background-color .12s ease,${spring(SPRING_TAP, "scale")}}
+.bt-q-submit,.bt-q-btn{flex:none;height:36px;padding:0 14px;border:0;border-radius:999px;font:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .12s ease,background-color .12s ease,${spring(SPRING_TAP, 'scale')}}
 .bt-q-submit{background:var(--bt-accent);color:var(--bt-accent-ink,#fff);animation:bt-q-submit-in ${SPRING_TAP.duration}ms ${SPRING_TAP.easing} backwards,bt-veil-in .16s ease-out backwards}
 @keyframes bt-q-submit-in{from{transform:translateX(8px) scale(.9)}}
 .bt-q-submit:hover:not(:disabled){opacity:.86}
@@ -417,10 +404,10 @@ button.bt-q-opt:active{background:var(--bt-active)}
 .bt-shape-row{display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
 .bt-shape{position:relative;aspect-ratio:1;border:0;border-radius:8px;background:none;color:var(--bt-ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .bt-shape:hover{background:var(--bt-hover)}
-.bt-shape .bt-ring{position:absolute;left:50%;top:50%;width:36px;height:36px;translate:-50% -50%;overflow:visible;opacity:0;scale:.82;pointer-events:none;transition:opacity .14s ease,${spring(SPRING_POP, "scale")}}
+.bt-shape .bt-ring{position:absolute;left:50%;top:50%;width:36px;height:36px;translate:-50% -50%;overflow:visible;opacity:0;scale:.82;pointer-events:none;transition:opacity .14s ease,${spring(SPRING_POP, 'scale')}}
 .bt-shape[aria-pressed=true] .bt-ring{opacity:1;scale:1}
 .bt-colors{display:flex;justify-content:space-between}
-.bt-color{width:22px;height:22px;border-radius:50%;border:2px solid transparent;padding:2px;background:none;cursor:pointer;box-sizing:border-box;transition:border-color .14s ease,${spring(SPRING_TAP, "scale")}}
+.bt-color{width:22px;height:22px;border-radius:50%;border:2px solid transparent;padding:2px;background:none;cursor:pointer;box-sizing:border-box;transition:border-color .14s ease,${spring(SPRING_TAP, 'scale')}}
 .bt-color[aria-pressed=true] span{animation:bt-check-pop ${SPRING_POP.duration}ms ${SPRING_POP.easing}}
 .bt-color span{display:block;width:100%;height:100%;border-radius:50%}
 .bt-color[aria-pressed=true]{border-color:var(--bt-ink)}
@@ -446,7 +433,7 @@ button.bt-q-opt:active{background:var(--bt-active)}
 .bt-settings-layer{position:fixed;inset:var(--dsh-frame-chrome-top,0px) 0 0;z-index:60;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
 .bt-scrim{position:absolute;inset:0;background:rgba(0,0,0,.32);animation:bt-fade .22s ease-out}
 body[data-ds-dark-theme] .bt-scrim{background:rgba(0,0,0,.5)}
-.bt-settings{--bt-set-w:min(800px,calc(100vw - 48px));--bt-set-h:min(620px,calc(100vh - 2*max(32px,var(--dsh-frame-overlay-top,32px))));position:relative;width:var(--bt-set-w);height:var(--bt-set-h);background:var(--bt-main);border-radius:16px;border:.5px solid var(--bt-line-2);box-shadow:0 24px 80px rgba(0,0,0,.24);display:flex;overflow:hidden;color:var(--bt-ink);transition:${spring(SPRING_SHAPE, "width", "height")};animation:bt-dialog-rise ${SPRING_SHAPE.duration}ms ${SPRING_SHAPE.easing},bt-veil-in .2s ease-out}
+.bt-settings{--bt-set-w:min(800px,calc(100vw - 48px));--bt-set-h:min(620px,calc(100vh - 2*max(32px,var(--dsh-frame-overlay-top,32px))));position:relative;width:var(--bt-set-w);height:var(--bt-set-h);background:var(--bt-main);border-radius:16px;border:.5px solid var(--bt-line-2);box-shadow:0 24px 80px rgba(0,0,0,.24);display:flex;overflow:hidden;color:var(--bt-ink);transition:${spring(SPRING_SHAPE, 'width', 'height')};animation:bt-dialog-rise ${SPRING_SHAPE.duration}ms ${SPRING_SHAPE.easing},bt-veil-in .2s ease-out}
 .bt-settings[data-wide]{--bt-set-w:min(1100px,calc(100vw - 48px));--bt-set-h:min(780px,calc(100vh - 2*max(32px,var(--dsh-frame-overlay-top,32px))))}
 :is(.bt-settings-layer,.bt-mem-layer)[data-leaving]{pointer-events:none}
 :is(.bt-settings-layer,.bt-mem-layer)[data-leaving] .bt-scrim{opacity:0;transition:opacity .16s ease-in}
@@ -571,7 +558,7 @@ ${SKIN_FOOT}>div:has(> [data-slot="sidebar.settings"]){order:-1!important;flex:n
 .bt-tool:active{background:var(--bt-active)}
 .bt-tool:focus-visible{outline:2px solid var(--bt-accent);outline-offset:-2px}
 .bt-react-strip{position:fixed;z-index:60;pointer-events:auto;display:flex;gap:2px;padding:4px;border-radius:999px;background:var(--bt-main);border:.5px solid var(--bt-line-2);box-shadow:0 10px 20px -3px rgba(0,0,0,.08),0 4px 6px -4px rgba(0,0,0,.06);transform:translate(-50%,-100%);transform-origin:bottom center;animation:bt-pop-lift ${SPRING_TAP.duration}ms ${SPRING_TAP.easing},bt-veil-in .14s ease-out}
-.bt-react-strip button{width:32px;height:32px;border:0;border-radius:50%;background:none;font-size:18px;line-height:1;cursor:pointer;transition:background-color .12s ease,${spring(SPRING_POP, "transform")};animation:bt-check-pop ${SPRING_POP.duration}ms ${SPRING_POP.easing} backwards}
+.bt-react-strip button{width:32px;height:32px;border:0;border-radius:50%;background:none;font-size:18px;line-height:1;cursor:pointer;transition:background-color .12s ease,${spring(SPRING_POP, 'transform')};animation:bt-check-pop ${SPRING_POP.duration}ms ${SPRING_POP.easing} backwards}
 .bt-react-strip button:nth-child(2){animation-delay:20ms}
 .bt-react-strip button:nth-child(3){animation-delay:40ms}
 .bt-react-strip button:nth-child(4){animation-delay:60ms}
@@ -579,7 +566,7 @@ ${SKIN_FOOT}>div:has(> [data-slot="sidebar.settings"]){order:-1!important;flex:n
 .bt-react-strip button:hover{background:var(--bt-hover);transform:scale(1.15)}
 .bt-react-strip button:active{transform:scale(.92)}
 .bt-reacts{display:flex;gap:4px;margin-top:4px}
-.bt-react{height:22px;min-width:30px;padding:0 6px;border-radius:999px;border:.5px solid var(--bt-line-2);background:var(--bt-main);font-size:13px;line-height:20px;cursor:pointer;animation:bt-react-pop ${SPRING_POP.duration}ms ${SPRING_POP.easing};transition:background-color .12s ease,${spring(SPRING_TAP, "scale")}}
+.bt-react{height:22px;min-width:30px;padding:0 6px;border-radius:999px;border:.5px solid var(--bt-line-2);background:var(--bt-main);font-size:13px;line-height:20px;cursor:pointer;animation:bt-react-pop ${SPRING_POP.duration}ms ${SPRING_POP.easing};transition:background-color .12s ease,${spring(SPRING_TAP, 'scale')}}
 .bt-react:hover{background:var(--bt-hover)}
 .bt-react:active{scale:.92}
 @keyframes bt-react-pop{from{transform:scale(.6);opacity:0}}
@@ -680,7 +667,7 @@ body[data-ds-dark-theme] .bt-theme-chip i{background:var(--da)}
 .bt-addlist{display:flex;flex-direction:column;margin-top:4px;padding:4px;border:1px solid var(--bt-line);border-radius:10px;background:var(--bt-card);animation:bt-rise .16s ease-out}
 .bt-seg{position:relative;display:flex;gap:2px;padding:2px;border-radius:10px;background:var(--bt-hover)}
 .bt-motion-seg{width:216px}
-.bt-seg button{position:relative;z-index:1;flex:1;height:30px;border:0;border-radius:8px;background:none;font:inherit;font-size:13px;color:var(--bt-ink-2);cursor:pointer;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease,${spring(SPRING_TAP, "scale")}}
+.bt-seg button{position:relative;z-index:1;flex:1;height:30px;border:0;border-radius:8px;background:none;font:inherit;font-size:13px;color:var(--bt-ink-2);cursor:pointer;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease,${spring(SPRING_TAP, 'scale')}}
 .bt-seg button[aria-pressed=true]{background:var(--bt-card);color:var(--bt-ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .bt-seg button:disabled{opacity:.4;cursor:default}
 .bt-seg button:active:not(:disabled){scale:.96}
@@ -766,7 +753,7 @@ body[data-ds-dark-theme] .bt-theme-chip i{background:var(--da)}
 .bt-mem-ask:focus-within{border-color:var(--bt-ink-3);box-shadow:0 4px 20px rgba(0,0,0,.1)}
 .bt-mem-input{flex:1;min-width:0;border:0;background:none;outline:none;color:var(--bt-ink);font:inherit;font-size:15px;line-height:22px;padding:0}
 .bt-mem-input::placeholder{color:var(--bt-ink-3)}
-.bt-mem-send{flex:none;width:36px;height:36px;border-radius:50%;border:0;background:var(--bt-ink);color:var(--bt-main);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:opacity .15s ease,${spring(SPRING_TAP, "scale")}}
+.bt-mem-send{flex:none;width:36px;height:36px;border-radius:50%;border:0;background:var(--bt-ink);color:var(--bt-main);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:opacity .15s ease,${spring(SPRING_TAP, 'scale')}}
 .bt-mem-send:disabled{opacity:.22;cursor:default}
 .bt-mem-send:not(:disabled):active{scale:.92}
 .bt-mem-send>*{animation:bt-check-pop ${SPRING_POP.duration}ms ${SPRING_POP.easing}}
@@ -791,7 +778,7 @@ body[data-ds-dark-theme] .bt-theme-chip i{background:var(--da)}
 .bt-panel-view>.bt-drawer-body[data-move=tab]{animation:bt-veil-in .2s ease-out}
 .bt-drawer-name-input{animation:bt-veil-in .16s ease-out}
 .bt-pop-in{display:inline-flex;animation:bt-check-pop ${SPRING_POP.duration}ms ${SPRING_POP.easing}}
-:is(.bt-soft,.bt-send,.bt-icon-btn,.bt-settings-close,.bt-mini,.bt-tab,.bt-nc-send,.bt-avedit-tab,.bt-shape,.bt-pick,.bt-swatch,.bt-palette-clear){transition:background-color .12s ease,color .12s ease,border-color .12s ease,opacity .12s ease,${spring(SPRING_TAP, "scale")}}
+:is(.bt-soft,.bt-send,.bt-icon-btn,.bt-settings-close,.bt-mini,.bt-tab,.bt-nc-send,.bt-avedit-tab,.bt-shape,.bt-pick,.bt-swatch,.bt-palette-clear){transition:background-color .12s ease,color .12s ease,border-color .12s ease,opacity .12s ease,${spring(SPRING_TAP, 'scale')}}
 :is(.bt-icon-btn,.bt-settings-close,.bt-nc-send,.bt-shape,.bt-swatch,.bt-color,.bt-x,.bt-q-x,.bt-palette-clear):active:not(:disabled){scale:.9}
 :is(.bt-soft,.bt-send,.bt-mini,.bt-tab,.bt-avedit-tab,.bt-pick,.bt-q-submit,.bt-q-btn):active:not(:disabled){scale:.96}
 @media (prefers-reduced-motion:reduce){.bt-thumb{transition:none}.bt-panel-view>[data-move],.bt-drawer-name-input,.bt-veil,.bt-pop-in,.bt-token,.bt-drop,.bt-newchat,.bt-option-hint,.bt-connector-form,.bt-settings-head>*{animation:none}}
@@ -855,7 +842,7 @@ body[data-ds-dark-theme] .bt-theme-chip i{background:var(--da)}
 @media (max-width:768px) and (prefers-reduced-motion:reduce){
   [data-slot="sidebar"]>:has(.bt-side){transition:none}
 }
-`;
+`
 
 export const CONVERSATION_CSS = `
 .bt-think{font-size:13px;line-height:18px;color:var(--bt-ink-2);margin:2px 0 4px;max-width:min(560px,78%)}
@@ -946,7 +933,7 @@ header[class*="_header"] .bt-head{flex:1 1 auto;width:100%}
 }
 @keyframes bt-fade-in{from{opacity:0}to{opacity:1}}
 @keyframes bt-fade-out{from{opacity:1}to{opacity:0}}
-[data-composer-card]{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;gap:0!important;min-height:44px!important;border-radius:22px!important;padding:7.5px!important;box-sizing:border-box;background:var(--bt-main)!important;border:.5px solid var(--bt-line-2)!important;box-shadow:0 2px 8px -1px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.03),0 0 0 1px rgba(228,228,228,.04)!important;transition:border-color .15s ease,background-color .15s ease,${spring(SPRING_SHAPE, "border-radius")}!important}
+[data-composer-card]{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;gap:0!important;min-height:44px!important;border-radius:22px!important;padding:7.5px!important;box-sizing:border-box;background:var(--bt-main)!important;border:.5px solid var(--bt-line-2)!important;box-shadow:0 2px 8px -1px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.03),0 0 0 1px rgba(228,228,228,.04)!important;transition:border-color .15s ease,background-color .15s ease,${spring(SPRING_SHAPE, 'border-radius')}!important}
 [data-composer-card]:hover,[data-composer-card]:focus-within{border-color:color-mix(in srgb,var(--bt-ink) 30%,transparent)!important}
 [data-composer-card]:has(> [data-slot="conversation.input.attachments"] *),[data-composer-card]:has([data-composer-input] br + *),[data-composer-card]:has([data-composer-input] > :nth-child(2)){border-radius:18px!important}
 [class*="_root"]:has(> [data-composer-card]){padding:0 11px 13px 16px!important}
@@ -963,10 +950,10 @@ header[class*="_header"] .bt-head{flex:1 1 auto;width:100%}
 [data-composer-placeholder]::before{content:var(--bt-placeholder,"Message")!important;display:block!important;font-size:14px!important;line-height:24px!important;color:color-mix(in srgb,var(--bt-ink) 36%,transparent)!important}
 /* The team's "+" (ComposerPlus) takes the seat of the shell's command-menu button. */
 [data-composer-card] button[class*="_add"]{display:none!important}
-.bt-plus{flex:none;width:28px;height:28px;padding:0;border:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--bt-ink) 5%,transparent);box-shadow:inset 0 0 0 .5px var(--bt-line);color:var(--bt-ink-2);cursor:pointer;transition:background-color .15s ease,color .15s ease,${spring(SPRING_TAP, "scale")}}
+.bt-plus{flex:none;width:28px;height:28px;padding:0;border:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--bt-ink) 5%,transparent);box-shadow:inset 0 0 0 .5px var(--bt-line);color:var(--bt-ink-2);cursor:pointer;transition:background-color .15s ease,color .15s ease,${spring(SPRING_TAP, 'scale')}}
 .bt-plus:hover,.bt-plus[aria-expanded=true]{background:color-mix(in srgb,var(--bt-ink) 10%,transparent);color:var(--bt-ink)}
 .bt-plus:active{scale:.9}
-.bt-plus svg{width:14px;height:14px;transition:${spring(SPRING_POP, "rotate")}}
+.bt-plus svg{width:14px;height:14px;transition:${spring(SPRING_POP, 'rotate')}}
 .bt-plus[aria-expanded=true] svg{rotate:45deg}
 .bt-plus-menu{min-width:180px}
 [data-composer-card] [class*="_tools"]{gap:0!important}
@@ -975,14 +962,14 @@ header[class*="_header"] .bt-head{flex:1 1 auto;width:100%}
 [data-composer-card] [class*="_trailing"]{gap:8px!important}
 /* No display here: DSH hides these controls with [hidden] while the Bot works. */
 [data-composer-card] [class*="_standardControls"]{align-items:center!important;gap:8px!important}
-[data-composer-card] button[class*="_primary"]{width:28px!important;height:28px!important;background:var(--bt-accent)!important;color:var(--bt-accent-ink,#fff)!important;border-radius:50%!important;transition:opacity .15s ease,${spring(SPRING_TAP, "scale")};animation:bt-icon-swap ${SPRING_POP.duration}ms ${SPRING_POP.easing}}
+[data-composer-card] button[class*="_primary"]{width:28px!important;height:28px!important;background:var(--bt-accent)!important;color:var(--bt-accent-ink,#fff)!important;border-radius:50%!important;transition:opacity .15s ease,${spring(SPRING_TAP, 'scale')};animation:bt-icon-swap ${SPRING_POP.duration}ms ${SPRING_POP.easing}}
 [data-composer-card] button[class*="_primary"]:hover:not(:disabled){opacity:.9}
 [data-composer-card] button[class*="_primary"]:active:not(:disabled){scale:.9}
 @keyframes bt-icon-swap{from{opacity:0;transform:scale(.5) rotate(-30deg)}}
 [data-composer-card] button[class*="_primary"] svg{width:14px;height:14px}
 [data-composer-card] button[class*="_primary"]:disabled{display:none!important}
 [data-composer-dock]{display:none!important}
-.bt-mic,.bt-voice{flex:none;width:28px;height:28px;border-radius:50%;border:0;padding:0;display:inline-grid;place-items:center;cursor:pointer;transition:background-color .15s ease,color .15s ease,${spring(SPRING_TAP, "scale")}}
+.bt-mic,.bt-voice{flex:none;width:28px;height:28px;border-radius:50%;border:0;padding:0;display:inline-grid;place-items:center;cursor:pointer;transition:background-color .15s ease,color .15s ease,${spring(SPRING_TAP, 'scale')}}
 .bt-mic{background:color-mix(in srgb,var(--bt-ink) 5%,transparent);box-shadow:inset 0 0 0 .5px var(--bt-line);color:var(--bt-ink-2)}
 .bt-mic:hover{background:color-mix(in srgb,var(--bt-ink) 10%,transparent);color:var(--bt-ink)}
 .bt-mic[aria-pressed=true]{background:#ff3e51;color:#fff;animation:bt-mic-pulse 1.4s ease-in-out infinite}
@@ -1019,7 +1006,7 @@ div:has(> nav [class*="_marks"]){display:none!important}
 .bt-q-dock .bt-q{margin:0 auto 8px}
 [class*="_toBottomSlot"]{justify-content:center!important;padding-right:0!important}
 [data-conversation-scroll] [class*="_toBottomSlot"]{bottom:calc(var(--dsh-composer-height,152px) + 8px)!important}
-[class*="_toBottomSlot"]>button{width:36px!important;height:36px!important;margin-top:-36px!important;background:var(--bt-main)!important;color:var(--bt-ink)!important;box-shadow:0 0 0 .5px var(--bt-line-2),0 2px 8px -2px rgba(0,0,0,.12)!important;animation:bt-tobottom-in ${SPRING_TAP.duration}ms ${SPRING_TAP.easing},bt-veil-in .16s ease-out;transition:background-color .12s ease,${spring(SPRING_TAP, "scale")}}
+[class*="_toBottomSlot"]>button{width:36px!important;height:36px!important;margin-top:-36px!important;background:var(--bt-main)!important;color:var(--bt-ink)!important;box-shadow:0 0 0 .5px var(--bt-line-2),0 2px 8px -2px rgba(0,0,0,.12)!important;animation:bt-tobottom-in ${SPRING_TAP.duration}ms ${SPRING_TAP.easing},bt-veil-in .16s ease-out;transition:background-color .12s ease,${spring(SPRING_TAP, 'scale')}}
 [class*="_toBottomSlot"]>button:active{scale:.9}
 [class*="_toBottomSlot"]>button:hover{background:color-mix(in srgb,var(--bt-ink) 4%,var(--bt-main))!important}
 [class*="_toBottomSlot"]>button svg{display:none}
@@ -1075,16 +1062,16 @@ div:has(> nav [class*="_marks"]){display:none!important}
   :is(.bt-plus,.bt-mic,.bt-voice),[data-composer-card] button[class*="_primary"]{width:36px!important;height:36px!important;touch-action:manipulation}
   [data-composer-card] [class*="_trailing"],[data-composer-card] [class*="_standardControls"]{gap:4px!important}
 }
-`;
+`
 
 // -------------------------------------------------------------------------
 
 export function installStyles(text, tag) {
- const style = document.createElement("style");
- style.dataset.dshBot = tag;
- style.textContent = text;
- document.head.appendChild(style);
- return style;
+  const style = document.createElement('style')
+  style.dataset.dshBot = tag
+  style.textContent = text
+  document.head.appendChild(style)
+  return style
 }
 
 // Shell chrome only exposes hashed CSS-module classes (`hem6sG_footArea`,
@@ -1092,84 +1079,64 @@ export function installStyles(text, tag) {
 // attribute selectors bypass the style engine's class index, and ~20 of them made
 // every style recalc about ten times slower. Rewrite each one into the exact class
 // names defined by the loaded stylesheets; keep the substring form when none match.
-const FRAGMENT_SELECTOR = /\[class\*="(_[\w-]+)"\]/g;
-const CLASS_TOKEN = /\.((?:\\.|[\w-])+)/g;
+const FRAGMENT_SELECTOR = /\[class\*="(_[\w-]+)"\]/g
+const CLASS_TOKEN = /\.((?:\\.|[\w-])+)/g
 
 function sheetClassNames(sheet) {
- const names = [];
- const visit = (rules) => {
-  for (const rule of rules) {
-   if (rule.selectorText)
-    for (const match of rule.selectorText.matchAll(CLASS_TOKEN))
-     names.push(match[1]);
-   if (rule.cssRules) visit(rule.cssRules);
+  const names = []
+  const visit = (rules) => {
+    for (const rule of rules) {
+      if (rule.selectorText) for (const match of rule.selectorText.matchAll(CLASS_TOKEN)) names.push(match[1])
+      if (rule.cssRules) visit(rule.cssRules)
+    }
   }
- };
- try {
-  visit(sheet.cssRules);
- } catch {
-  /* cross-origin sheet */
- }
- return names;
+  try { visit(sheet.cssRules) } catch { /* cross-origin sheet */ }
+  return names
 }
 
 function compileFragmentSelectors(text, names) {
- const compiled = new Map();
- return text.replace(FRAGMENT_SELECTOR, (whole, fragment) => {
-  if (!compiled.has(fragment)) {
-   const exact = [];
-   for (const name of names)
-    if (name.includes(fragment)) exact.push(`.${name}`);
-   compiled.set(fragment, exact.length ? `:is(${exact.join(",")})` : whole);
-  }
-  return compiled.get(fragment);
- });
+  const compiled = new Map()
+  return text.replace(FRAGMENT_SELECTOR, (whole, fragment) => {
+    if (!compiled.has(fragment)) {
+      const exact = []
+      for (const name of names) if (name.includes(fragment)) exact.push(`.${name}`)
+      compiled.set(fragment, exact.length ? `:is(${exact.join(',')})` : whole)
+    }
+    return compiled.get(fragment)
+  })
 }
 
 export function installCompiledStyles(text, tag) {
- const style = installStyles("", tag);
- const cache = new WeakMap();
- const render = () => {
-  const names = new Set();
-  for (const sheet of document.styleSheets) {
-   if (sheet.ownerNode?.dataset?.dshBot) continue;
-   let list = cache.get(sheet);
-   if (!list) {
-    list = sheetClassNames(sheet);
-    cache.set(sheet, list);
-   }
-   for (const name of list) names.add(name);
+  const style = installStyles('', tag)
+  const cache = new WeakMap()
+  const render = () => {
+    const names = new Set()
+    for (const sheet of document.styleSheets) {
+      if (sheet.ownerNode?.dataset?.dshBot) continue
+      let list = cache.get(sheet)
+      if (!list) { list = sheetClassNames(sheet); cache.set(sheet, list) }
+      for (const name of list) names.add(name)
+    }
+    const next = compileFragmentSelectors(text, names)
+    if (style.textContent !== next) style.textContent = next
   }
-  const next = compileFragmentSelectors(text, names);
-  if (style.textContent !== next) style.textContent = next;
- };
- render();
- // Lazily loaded shell features append their own sheets later.
- let timer;
- const schedule = () => {
-  clearTimeout(timer);
-  timer = setTimeout(render, 120);
- };
- const onLoad = (event) => {
-  if (event.target instanceof HTMLLinkElement) schedule();
- };
- // Our own sheets name no shell classes, so adding one (the panel's first open adds the
- // chat column's rule) recompiles nothing.
- const shell = (node) => node.dataset?.dshBot === undefined;
- const observer = new MutationObserver((records) => {
-  if (
-   records.some((record) =>
-    [...record.addedNodes, ...record.removedNodes].some(shell),
-   )
-  )
-   schedule();
- });
- observer.observe(document.head, { childList: true });
- document.addEventListener("load", onLoad, true);
- return () => {
-  observer.disconnect();
-  document.removeEventListener("load", onLoad, true);
-  clearTimeout(timer);
-  style.remove();
- };
+  render()
+  // Lazily loaded shell features append their own sheets later.
+  let timer
+  const schedule = () => { clearTimeout(timer); timer = setTimeout(render, 120) }
+  const onLoad = (event) => { if (event.target instanceof HTMLLinkElement) schedule() }
+  // Our own sheets name no shell classes, so adding one (the panel's first open adds the
+  // chat column's rule) recompiles nothing.
+  const shell = node => node.dataset?.dshBot === undefined
+  const observer = new MutationObserver((records) => {
+    if (records.some(record => [...record.addedNodes, ...record.removedNodes].some(shell))) schedule()
+  })
+  observer.observe(document.head, { childList: true })
+  document.addEventListener('load', onLoad, true)
+  return () => {
+    observer.disconnect()
+    document.removeEventListener('load', onLoad, true)
+    clearTimeout(timer)
+    style.remove()
+  }
 }
