@@ -10,6 +10,13 @@ import { t } from './i18n.js'
 // -------------------------------------------------------------------------
 // Conversation header
 
+// A shell-level control also stays reachable on Bot mode's plain Agent sessions.
+export function MobileNavigation({ actions }) {
+  return h('button', { type: 'button', className: 'bt-mobile-menu bt-round', 'aria-label': t('Bot list'), 'aria-haspopup': 'dialog', onClick: () => actions.toggleSidebar() },
+    h('svg', { width: 20, height: 20, viewBox: '0 0 20 20', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', 'aria-hidden': true },
+      h('path', { d: 'M3 5h14M3 10h14M3 15h14' })))
+}
+
 // The pill's tail: a → that springs in on hover, flipping to ← while details are open.
 const GoArrow = () => h('svg', { width: 14, height: 14, viewBox: '-12 -12 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }, h('path', { d: 'M-7 0H7M2 -5L7 0L2 5' }))
 

@@ -42,6 +42,10 @@ I strongly recommend that you set up your other bots and group chats by just tal
 
 ## Features
 
+### Mobile
+
+In Bot mode, screens up to 768px use a full-width conversation. Open the Bot list from the header menu; tap outside it or press Escape to close it. Details, memory, and settings fill the screen, with every settings page available from the page selector. The composer accounts for safe areas and the visible keyboard viewport. Wider screens keep the desktop layout.
+
 ### Bot
 
 You can do all your talking and work with one bot, in one window. You don't need to worry about the context behind it. The bot's details page shows its info, and there you can pick the model you want it to use. You can switch models at any time, but I still recommend that you keep one model for a bot for a long time, and switch only when you really need to.
