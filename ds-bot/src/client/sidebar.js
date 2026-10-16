@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { FishLogo } from '@deepseek-ai/dsh-client-ui-primitives'
 import { isMainOf } from './sources.js'
 import { currentPart, previewOf, relativeShort } from './text.js'
-import { PlusIcon, SearchIcon, GaugeIcon, PlugIcon, ClockIcon, GearIcon, PinMarkIcon, ConnectorIcon, SwitchIcon, CloudDownloadIcon } from './icons.js'
+import { PlusIcon, SearchIcon, GaugeIcon, PlugIcon, ClockIcon, GearIcon, PinMarkIcon, ConnectorIcon, SwitchIcon, CloudDownloadIcon, CloseIcon } from './icons.js'
 import { MAIN_LOOK } from './characters.js'
 import { botState, BotMark, BotAvatar, RoomAvatar } from './mark.js'
 import { reducedMotion } from './activity-row.js'
@@ -11,6 +11,7 @@ import { Shimmer, workPhrase } from './cells.js'
 import { springEasing, SPRING_SHAPE } from './motion.js'
 import { hostText, t } from './i18n.js'
 import { showsDshRow } from './dsh-offer.js'
+import { useEscape, useMobile, useMobileModal } from './overlay-hooks.js'
 
 // -------------------------------------------------------------------------
 // Sidebar
@@ -237,6 +238,14 @@ function useListGlide(listRef, layout, key) {
 export function TeamSidebar(props) {
   const { wide, useRoster, useUi, useSessions, actions } = props
   const listRef = useRef(null)
+  const sideRef = useRef(null)
+  const mobile = useMobile()
+  const overlayOpen = useUi(value => Boolean(value.settings || value.newChat || value.palette || value.memory || value.voice || value.exchange || value.details))
+  useMobileModal(sideRef, mobile && wide && !overlayOpen, t('Bot list'))
+  useEscape(() => actions.toggleSidebar(), mobile && wide && !overlayOpen)
+  useEffect(() => {
+    if (mobile && wide && overlayOpen) actions.toggleSidebar()
+  }, [mobile, wide, overlayOpen])
   const roster = useRoster(value => value)
   const markedUnread = useUi(value => value.unread)
   props.useRegistry(value => value)
@@ -266,10 +275,20 @@ export function TeamSidebar(props) {
     event.preventDefault()
     actions.openPalette(event.key)
   }
-  return h('div', { className: wide ? 'bt-side' : 'bt-side bt-rail', onKeyDown: typeToSearch },
+  return h('div', {
+    ref: node => { sideRef.current = node?.closest('[data-slot="sidebar"]') ?? node },
+    className: wide ? 'bt-side' : 'bt-side bt-rail', onKeyDown: typeToSearch,
+    onClick: event => {
+      if (mobile && wide && event.target.closest('.bt-row,.bt-tile,.bt-agent-sub-row')) actions.toggleSidebar()
+    } },
+    mobile && wide ? createPortal(h('button', {
+      type: 'button', className: 'bt-sidebar-scrim', 'aria-label': t('Close'), tabIndex: -1,
+      onClick: () => actions.toggleSidebar(),
+    }), sideRef.current?.closest('[class*="_frame"]') ?? document.body) : null,
     wide ? h('div', { className: 'bt-side-top' },
       h('span', { className: 'bt-brand' }, h(BrandMark, { size: 22 }), h(BrandName)),
       h(UpdateButton, { useUpdate: props.useUpdate, actions }),
+      h('button', { type: 'button', className: 'bt-round bt-sidebar-close', 'aria-label': t('Close'), onClick: () => actions.toggleSidebar() }, h(CloseIcon)),
       h('button', { type: 'button', className: 'bt-round', 'aria-label': t('Search'), title: t('Search'), onClick: () => actions.openPalette() }, h(SearchIcon)),
       h('button', { type: 'button', className: 'bt-round', 'aria-label': t('New…'), title: t('New…'), onClick: () => actions.openNewChat('new') }, h(PlusIcon)))
       : h(Fragment, null,

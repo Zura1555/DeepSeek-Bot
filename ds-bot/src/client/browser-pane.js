@@ -9,6 +9,7 @@ import { BotMark } from './mark.js'
 import { STORAGE } from './storage.js'
 import { SPRING_SHAPE, springEasing } from './motion.js'
 import { DetailsDrawer } from './details-drawer.js'
+import { useMobileModal } from './overlay-hooks.js'
 import { t } from './i18n.js'
 
 export const PANEL_LINGER_MS = 300
@@ -282,7 +283,7 @@ function BrowserView({ bot, tabId, leaving, landed, actions, useBrowserPages }) 
  * `{ id, view: 'details'|'browser', renaming, tab }`; `id` is the Session id the
  * panel follows. Without the Desktop bridge the browser view never shows.
  */
-export function BotPanel({ pane, leaving, roster, actions, useSessions, useSessionStatus, useActivity, useWork, useBrowserTabs, useBrowserPages }) {
+export function BotPanel({ pane, leaving, covered, roster, actions, useSessions, useSessionStatus, useActivity, useWork, useBrowserTabs, useBrowserPages }) {
   const bot = roster.byId[pane.id]
   const canBrowse = Boolean(bot && roster.browser === true && actions.browserShow)
   const view = pane.view === 'browser' && canBrowse ? 'browser' : 'details'
@@ -301,7 +302,9 @@ export function BotPanel({ pane, leaving, roster, actions, useSessions, useSessi
   const instant = dragging || resizing
   const [reading, setReading] = useState(false)
 
-  const panelWidth = fitWidth(width ?? (view === 'browser' ? DEFAULT_WIDTH : DETAILS_WIDTH), widthRange(view, viewport))
+  const mobile = viewport <= 768
+  useMobileModal(root, mobile && !leaving, undefined, covered)
+  const panelWidth = mobile ? viewport : fitWidth(width ?? (view === 'browser' ? DEFAULT_WIDTH : DETAILS_WIDTH), widthRange(view, viewport))
   // Once the browser has shown, the Bot page keeps its width (up to DETAILS_MAX).
   useLayoutEffect(() => { if (view === 'browser' && width === null) setWidth(DEFAULT_WIDTH) }, [view, width])
   useLayoutEffect(() => { chatRoom.hold(instant) }, [instant])
@@ -321,9 +324,9 @@ export function BotPanel({ pane, leaving, roster, actions, useSessions, useSessi
     const switched = settling && shownView.current !== view
     shownView.current = view
     if (switched) chatRoom.hold(true)
-    chatRoom.set(leaving ? null : panelWidth)
+    chatRoom.set(leaving || mobile ? null : panelWidth)
     if (switched) chatRoom.hold(false)
-  }, [view, panelWidth, leaving])
+  }, [view, panelWidth, leaving, mobile])
   useEffect(() => () => { chatRoom.set(null); chatRoom.hold(false) }, [])
   useEffect(() => {
     let timer
@@ -472,6 +475,7 @@ export function BotPanel({ pane, leaving, roster, actions, useSessions, useSessi
   const hasStrip = canBrowse && tabState.ids.length > 0
   return h('aside', {
     ref: root, className: 'bt-panel', 'data-view': view, 'aria-label': view === 'browser' && bot ? t("{name}'s browser", { name: bot.name }) : t('Conversation details'),
+    role: mobile ? 'dialog' : undefined, 'aria-modal': mobile ? true : undefined,
     'data-leaving': leaving || undefined, 'aria-hidden': leaving || undefined, 'data-settling': settling || undefined,
     'data-instant': instant || undefined, 'data-dragging': dragging || undefined, style: { '--bt-panel-w': `${panelWidth}px` },
     onAnimationEnd: (event) => { if (event.target === event.currentTarget) setLanded(true) },

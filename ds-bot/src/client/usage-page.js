@@ -747,4 +747,21 @@ button.bt-us-row:hover{background:var(--bt-hover)}
 @keyframes bt-us-pulse{50%{opacity:.25}}
 @keyframes bt-us-shine{from{background-position:200% 0}to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.bt-us *,.bt-us *::before{animation:none!important;transition:none!important}}
+@media (max-width:768px){
+  .bt-us-tabs{max-width:100%;overflow-x:auto}
+  .bt-us-skel{max-width:100%}
+  .bt-us-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bt-us-stat-main{grid-column:1/-1}
+  .bt-us-stat{padding:12px}
+  .bt-us-stat-value{flex-wrap:wrap;white-space:normal}
+  .bt-us-pair{grid-template-columns:minmax(0,1fr)}
+  .bt-us-card{padding:12px}
+  .bt-us-card-head{flex-wrap:wrap}
+  .bt-us-heat-months,.bt-us-heat-grid{grid-template-columns:repeat(${HEAT_WEEKS},minmax(0,1fr))}
+  .bt-us-heat-months span{min-width:0}
+  .bt-us-heat-months span:last-child{justify-self:end}
+  .bt-us-month{max-width:100%}
+  .bt-us-weekdays,.bt-us-days{grid-template-columns:repeat(7,minmax(0,1fr))}
+  .bt-us-pick-foot{flex-wrap:wrap;gap:6px;white-space:normal}
+}
 `

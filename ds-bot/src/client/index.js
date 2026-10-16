@@ -25,7 +25,7 @@ import { FOLDER_CSS } from './folder-menu.js'
 import { USAGE_CSS } from './usage-page.js'
 import { SCHEDULE_CSS } from './schedules.js'
 import { STORAGE, migrateStorage } from './storage.js'
-import { groupsFor, readMode, surfaceGroups, writeMode } from './surface.js'
+import { groupsFor, installMobileViewport, readMode, surfaceGroups, writeMode } from './surface.js'
 import { installLocale, language } from './i18n.js'
 import { noteClientError, quietly } from './diagnostics.js'
 import { ErrorToast, FEEDBACK_CSS } from './feedback.js'
@@ -418,6 +418,7 @@ export function apply(ctx) {
       ctx.uiWorkspace.openSession(target)
     },
     selectPanel: (id) => { ctx.layout.selectPanel(id) },
+    toggleSidebar: () => ctx.layout.toggleSidebar(),
     openNewChat: (mode) => { ui.set(state => ({ ...state, newChat: mode, menu: null, palette: null })) },
     openPalette: (query = '') => { ui.set(state => ({ ...state, palette: { query, token: Date.now() }, newChat: null, menu: null })) },
     // The token keeps a late exit timer from closing a palette opened again since.
@@ -749,6 +750,7 @@ export function apply(ctx) {
   // group re-skins the session itself. Every disposer comes from slots.inject, so a
   // surface change withdraws the whole group and the outlets re-render.
   const installShell = () => [
+    installMobileViewport(),
     installCompiledStyles(SHELL_CSS, 'shell'),
     installCompiledStyles(SIDEBAR_CSS, 'sidebar'),
     installCompiledStyles(SECRET_CSS, 'secrets'),

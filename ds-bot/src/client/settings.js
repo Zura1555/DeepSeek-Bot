@@ -5,7 +5,7 @@ import { allThemes } from './themes.js'
 import { CloseIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, ConnectorIcon, InfoIcon, PlugIcon, PlusIcon, SlidersIcon, SETTINGS_ICONS } from './icons.js'
 import { AdminStar, BotAvatar, RoomAvatar } from './mark.js'
 import { openHarnessSettings } from './sidebar.js'
-import { useEscape } from './overlay-hooks.js'
+import { useEscape, useMobile, useMobileModal } from './overlay-hooks.js'
 import { BotSettingsForm } from './bot-settings.js'
 import { Segmented, useGlide } from './motion.js'
 import { GroupSettingsForm, NewGroupForm } from './group-settings.js'
@@ -151,6 +151,9 @@ function GroupsPage({ roster, actions, run }) {
 // While `leaving`, the dialog plays its exit and takes no input.
 export function SettingsDialog({ page, id, roster, actions, useUpdate, leaving = false }) {
   const [error, setError] = useState('')
+  const root = useRef(null)
+  const mobile = useMobile()
+  useMobileModal(root, mobile && !leaving)
   const close = useCallback(() => actions.closeSettings(), [])
   useEscape(close)
   const run = promise => Promise.resolve(promise)
@@ -181,7 +184,11 @@ export function SettingsDialog({ page, id, roster, actions, useUpdate, leaving =
   const errorLine = error ? h('div', { className: 'bt-error', role: 'alert', style: { padding: 0 } }, error) : null
   return h('div', { className: 'bt-settings-layer', 'data-leaving': leaving || undefined },
     h('div', { className: 'bt-scrim', onMouseDown: close }),
-    h('div', { className: 'bt-settings', role: 'dialog', 'aria-modal': true, 'aria-label': t('DS Bot settings'), 'data-wide': shown === 'usage' ? '' : undefined },
+    h('div', { ref: root, className: 'bt-settings', role: 'dialog', 'aria-modal': true, 'aria-label': t('DS Bot settings'), 'data-wide': shown === 'usage' ? '' : undefined },
+      h('select', { className: 'bt-settings-mobile-nav', 'aria-label': t('Settings pages'), value: shown,
+        onChange: event => (event.target.value === 'harness' ? (close(), openHarnessSettings()) : actions.openSettings(event.target.value)) },
+      SETTINGS_PAGES.map(([key, text]) => h('option', { key, value: key }, t(text))),
+      h('option', { value: 'harness' }, t('Harness settings'))),
       h('nav', { ref: nav.box, className: 'bt-settings-nav', 'aria-label': t('Settings pages') },
         h('span', { ref: nav.thumb, className: 'bt-thumb', 'aria-hidden': true }),
         SETTINGS_PAGES.map(([key, text]) => h('button', {

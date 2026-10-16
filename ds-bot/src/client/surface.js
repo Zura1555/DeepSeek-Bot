@@ -48,3 +48,50 @@ export function readMode(storage = globalThis.localStorage) {
 export function writeMode(mode, storage = globalThis.localStorage) {
   try { storage.setItem(STORAGE.surface, mode) } catch { /* storage unavailable */ }
 }
+
+// iOS's keyboard resizes the visual viewport, not the layout viewport or dvh.
+// Keep these writes scoped to Bot mode and restore the host's viewport on withdrawal.
+export function installMobileViewport() {
+  const mobile = window.matchMedia('(max-width: 768px)')
+  const viewport = window.visualViewport
+  const meta = document.querySelector('meta[name="viewport"]')
+  const original = meta?.getAttribute('content')
+  const update = () => {
+    if (mobile.matches) {
+      if (meta) {
+        const content = (original ?? 'width=device-width, initial-scale=1').split(',')
+          .filter(part => !/^\s*(viewport-fit|interactive-widget)\s*=/.test(part))
+        meta.setAttribute('content', [...content, 'viewport-fit=cover', 'interactive-widget=resizes-content'].join(','))
+      }
+      // Pinch zoom must remain free to pan and scale the page.
+      if (!viewport || viewport.scale === 1) {
+        document.body.style.setProperty('--bt-viewport-height', `${viewport?.height ?? window.innerHeight}px`)
+        document.body.style.setProperty('--bt-viewport-top', `${viewport?.offsetTop ?? 0}px`)
+      }
+    } else {
+      if (meta) {
+        if (original === null) meta.removeAttribute('content')
+        else meta.setAttribute('content', original)
+      }
+      document.body.style.removeProperty('--bt-viewport-height')
+      document.body.style.removeProperty('--bt-viewport-top')
+    }
+  }
+  update()
+  mobile.addEventListener('change', update)
+  window.addEventListener('resize', update)
+  viewport?.addEventListener('resize', update)
+  viewport?.addEventListener('scroll', update)
+  return () => {
+    mobile.removeEventListener('change', update)
+    window.removeEventListener('resize', update)
+    viewport?.removeEventListener('resize', update)
+    viewport?.removeEventListener('scroll', update)
+    if (meta) {
+      if (original === null) meta.removeAttribute('content')
+      else meta.setAttribute('content', original)
+    }
+    document.body.style.removeProperty('--bt-viewport-height')
+    document.body.style.removeProperty('--bt-viewport-top')
+  }
+}

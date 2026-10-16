@@ -6,27 +6,27 @@ English | [中文](README.zh.md)
 
 ## What’s different
 
-The mobile changes live on [`feat/mobile-bot-layout`](https://github.com/Zura1555/DeepSeek-Bot/tree/feat/mobile-bot-layout):
+Mobile improvements are included in this fork’s [`main`](https://github.com/Zura1555/DeepSeek-Bot/tree/main) branch:
 
 - Full-width chat and a sidebar drawer at widths up to 768px.
 - Full-screen details, memory, and settings panels.
 - Safe-area and keyboard-aware composer; touch-accessible message actions.
 - Desktop layout unchanged above 768px. Existing Bots, groups, memory, approvals, and tools remain available.
 
-No DSH core modifications. The default `main` branch does not yet include the mobile implementation.
+No DSH core modifications.
 
 ## Install this fork
 
 Requires Git, Node.js 22.19+ and pnpm. Configure a model in DSH first.
 
 ```sh
-npx @deepseek-ai/dsh@0.2.0-rc.2 plugin --profile web add 'github:Zura1555/DeepSeek-Bot#feat/mobile-bot-layout&path:/ds-bot'
+npx @deepseek-ai/dsh@0.2.0-rc.2 plugin --profile web add 'github:Zura1555/DeepSeek-Bot#main&path:/ds-bot'
 npx @deepseek-ai/dsh@0.2.0-rc.2 web
 ```
 
 For DSH Desktop, use the same GitHub package address in **Plugins → Add plugin**. Restart DSH if prompted.
 
-Talk to **Chief**, the Main Bot, to set up your team. Installing the npm package `ds-bot` installs upstream, not this fork’s mobile branch.
+Talk to **Chief**, the Main Bot, to set up your team. Installing the npm package `ds-bot` installs upstream, not this mobile fork.
 
 ## Docs and safety
 
