@@ -20,25 +20,23 @@ No DSH core modifications.
 Requires Git, Node.js 22.19+ and pnpm. Configure a model in DSH first.
 
 1. In the sidebar, select **Plugins** → **Add plugin**.
-2. In **Package name or address**, enter `ds-bot`. In mainland China, set **Registry** to **Mainland China mirror**.
+2. In **Package name or address**, enter `github:Zura1555/DeepSeek-Bot#main&path:/ds-bot`.
 3. Select **Install**, then **Enable now**. If DSH says the change takes effect at the next start, quit DSH completely and open it again.
-
-If npm is not reachable, in step 2 you can also enter the full path of `ds-bot-0.1.7.tgz` downloaded from [Releases](https://github.com/Fei2411/DeepSeek-Bot/releases), or `github:Fei2411/DeepSeek-Bot#v0.1.7&path:/ds-bot` (needs Git).
 
 **DSH Web (Windows, macOS, Linux)**
 
 Needs Node.js `22.19` or later, and pnpm.
 
 ```sh
-npx @deepseek-ai/dsh@0.2.0-rc.2 plugin --profile web add 'github:Zura1555/DeepSeek-Bot#main&path:/ds-bot'
-npx @deepseek-ai/dsh@0.2.0-rc.2 web
+npx @deepseek-ai/dsh@0.2.1-rc.2 plugin --profile web add 'github:Zura1555/DeepSeek-Bot#main&path:/ds-bot'
+npx @deepseek-ai/dsh@0.2.1-rc.2 web
 ```
 
 For DSH Desktop, use the same GitHub package address in **Plugins → Add plugin**. Restart DSH if prompted.
 
 **Docker (NAS, Linux server)**
 
-The [`docker/`](docker/) directory builds an image with DSH Web and DS Bot, for a NAS or any always-on machine. The container is the Bots' sandbox: they get full access to what you mount into it, and nothing else. See [`docker/README.md`](docker/README.md).
+The [`docker/`](docker/) directory builds an image with DSH Web and DS Bot, for a NAS or any always-on machine. CI is configured to publish a prebuilt linux/amd64 image to GHCR. The container is the Bots' sandbox: they get full access to what you mount into it, and nothing else. See [`docker/README.md`](docker/README.md).
 
 ## Setup
 
