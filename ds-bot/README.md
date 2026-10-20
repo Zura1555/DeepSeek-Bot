@@ -16,7 +16,7 @@ Tested with dsh `0.2.1-rc.2` (Web) and `0.2.0-rc.2` (Web and Desktop).
 - **Roles and permissions**:
 
   | Who | Can do |
-  |---|---|
+  | --- | --- |
   | You | Everything |
   | Main Bot (there can be more than one) | Manage every group; change and delete Bots |
   | Group admin | Manage its own group only (name, notice, members, reply mode) |
@@ -27,6 +27,7 @@ Tested with dsh `0.2.1-rc.2` (Web) and `0.2.0-rc.2` (Web and Desktop).
 - **Web search**: see [Web search](#web-search).
 - **Bot browser (dsh Desktop only)**: see [Bot browser](#bot-browser).
 - **Images**: for a model that cannot read images, a vision model first turns the image into text.
+- **Reasoning**: **Thought it through** starts collapsed. Click it, or focus it and press Enter or Space, to expand or collapse the scrollable reasoning. New reasoning does not reopen it.
 - **Secrets**: a Bot asks for an API key or token with a card in its own chat and never sees the value. See [Secrets](#secrets).
 - **Usage**: Settings → Usage shows token usage by time (24 hours to 12 months, or days picked on a calendar), by Bot and by model, with a page for each Bot and each model. Calls that a Session logs are read from the logs, so older chats count too. Calls that leave no log (checkpoints, handoff notes, the steward, image readings, dsh titles and compaction) are counted while they stream, from the time the plugin runs. Tokens only, no cost.
 - **Make it yours**: name, role, instructions, model and look (20 characters and 12 colors, or your own photo) for each Bot; a theme, an accent color and an avatar animation level (quiet, normal or lively) for the team. A pinned Bot or group chat shows a small pushpin in the sidebar. Settings has these pages: General (look), Bots (Main Bots and each Bot's settings), Group chats (each group's settings), Connectors, Capabilities, Scheduled tasks, Usage, Secrets, Feedback and About DS Bot (versions, updates and links).
@@ -178,7 +179,7 @@ Limits:
 The plugin saves its data in `config.home`. Without it, the folder is `$DSH_HOME/bot`, or `~/.dsh/bot` when `DSH_HOME` is not set.
 
 | System | Default folder |
-|---|---|
+| --- | --- |
 | Linux, macOS | `~/.dsh/bot/` |
 | Windows | `C:\Users\<user>\.dsh\bot\` |
 
@@ -188,7 +189,7 @@ The plugin saves its data in `config.home`. Without it, the folder is `$DSH_HOME
 Files in `bot/`:
 
 | File | Content |
-|---|---|
+| --- | --- |
 | `state.json` | The team: Bots, groups, Bot-to-Bot messages, preferences and open questions. A long message keeps only its first 2,000 characters here; all of it is in the Session it went to. |
 | `group-lines/` | Long group lines, up to the 20,000 characters a member reads, one file per line; each is removed when its line leaves the group's latest 60 lines or the group is deleted |
 | `state.lock` | The dsh that is using this data (pid and host). It is removed when that dsh exits. |
@@ -239,7 +240,7 @@ dev/check.sh                             # all checks (see below)
 ## Layout
 
 | Path | Purpose |
-|---|---|
+| --- | --- |
 | `index.js` | Host entry: installs the `src/host/` modules in order |
 | `src/host/` | Host: team and storage (`roster`, `store`), tools (`tools`), turns and delivery (`turns`, `delivery`), group chats (`groups`), chat parts, the context steward and the index (`parts`, `steward`, `chat-index`), image text (`images`), secrets (`secrets`), Bot browser (`browser`), the `POST api/bot` route (`channel`) |
 | `src/client/` | Browser source: sidebar, chat header, transcript cells, panels and dialogs, themes, Bot browser panel |

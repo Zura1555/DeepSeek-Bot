@@ -123,18 +123,20 @@ function ThinkingRow({ text }) {
   const [fade, setFade] = useState(undefined)
   const measure = () => {
     const el = box.current
+    if (!el.parentElement.open) return
     atEnd.current = el.scrollHeight - el.scrollTop - el.clientHeight < 2
     const above = el.scrollTop > 0
     setFade(above && !atEnd.current ? 'both' : above ? 'top' : !atEnd.current ? 'bottom' : undefined)
   }
-  useLayoutEffect(() => {
+  const follow = () => {
     const el = box.current
-    if (atEnd.current) el.scrollTop = el.scrollHeight
+    if (atEnd.current && el.parentElement.open) el.scrollTop = el.scrollHeight
     measure()
-  }, [text])
+  }
+  useLayoutEffect(follow, [text])
   const title = t('Thought it through')
-  return h('div', { className: 'bt-think' },
-    h('div', { className: 'bt-think-title' }, title),
+  return h('details', { className: 'bt-think', onToggle: follow },
+    h('summary', { className: 'bt-think-title' }, title),
     h('div', { ref: box, className: 'bt-think-text', role: 'region', 'aria-label': title, tabIndex: 0, 'data-fade': fade, onScroll: measure }, text))
 }
 

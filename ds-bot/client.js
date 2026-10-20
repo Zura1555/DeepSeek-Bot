@@ -4421,20 +4421,22 @@ function ThinkingRow({ text }) {
   const [fade, setFade] = (0, import_react7.useState)(void 0);
   const measure = () => {
     const el = box.current;
+    if (!el.parentElement.open) return;
     atEnd.current = el.scrollHeight - el.scrollTop - el.clientHeight < 2;
     const above = el.scrollTop > 0;
     setFade(above && !atEnd.current ? "both" : above ? "top" : !atEnd.current ? "bottom" : void 0);
   };
-  (0, import_react7.useLayoutEffect)(() => {
+  const follow = () => {
     const el = box.current;
-    if (atEnd.current) el.scrollTop = el.scrollHeight;
+    if (atEnd.current && el.parentElement.open) el.scrollTop = el.scrollHeight;
     measure();
-  }, [text]);
+  };
+  (0, import_react7.useLayoutEffect)(follow, [text]);
   const title = t("Thought it through");
   return (0, import_react7.createElement)(
-    "div",
-    { className: "bt-think" },
-    (0, import_react7.createElement)("div", { className: "bt-think-title" }, title),
+    "details",
+    { className: "bt-think", onToggle: follow },
+    (0, import_react7.createElement)("summary", { className: "bt-think-title" }, title),
     (0, import_react7.createElement)("div", { ref: box, className: "bt-think-text", role: "region", "aria-label": title, tabIndex: 0, "data-fade": fade, onScroll: measure }, text)
   );
 }
