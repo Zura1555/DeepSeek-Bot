@@ -1,4 +1,4 @@
-import { createElement as h, Fragment, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createElement as h, Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { FishLogo } from './dsh-primitives.js'
 import { isMainOf } from './sources.js'
@@ -245,7 +245,7 @@ function useListGlide(listRef, layout, key) {
 }
 
 export function TeamSidebar(props) {
-  const { wide, useRoster, useUi, useSessions, actions } = props
+  const { wide, expandSidebar, useRoster, useUi, useSessions, actions } = props
   const listRef = useRef(null)
   const sideRef = useRef(null)
   const mobile = useMobile()
@@ -255,6 +255,8 @@ export function TeamSidebar(props) {
   useEffect(() => {
     if (mobile && wide && overlayOpen) actions.toggleSidebar()
   }, [mobile, wide, overlayOpen])
+  const closing = useRef(false)
+  useLayoutEffect(() => { closing.current = false })
   const roster = useRoster(value => value)
   const markedUnread = useUi(value => value.unread)
   props.useRegistry(value => value)
@@ -276,7 +278,26 @@ export function TeamSidebar(props) {
   const main = roster.byId[roster.mainBotId]
   useListGlide(listRef, wide, order.map(entry => entry.item.id).join(','))
   useLandOnMainBot(roster, useSessions, actions)
-  const rowProps = { roster, actions, useSessions, useUi, useSessionStatus: props.useSessionStatus, useSessionRetainInfo: props.useSessionRetainInfo, useActivity: props.useActivity, useWork: props.useWork, wide }
+  // The shell keeps wide content during its collapse fade. Normalize through its
+  // public expansion action before toggling; coalesce synchronous activations
+  // until React commits the result.
+  const navigate = (open, id) => {
+    const result = open(id)
+    if (wide && window.innerWidth < 1024 && !closing.current) {
+      closing.current = true
+      expandSidebar?.()
+      actions.toggleSidebar()
+    }
+    return result
+  }
+  const rowActions = {
+    ...actions,
+    openSession: id => navigate(actions.openSession, id),
+    openAgent: id => navigate(actions.openAgent, id),
+    openAgentSession: id => navigate(actions.openAgentSession, id),
+    newAgentSession: id => navigate(actions.newAgentSession, id),
+  }
+  const rowProps = { roster, actions: rowActions, useSessions, useUi, useSessionStatus: props.useSessionStatus, useSessionRetainInfo: props.useSessionRetainInfo, useActivity: props.useActivity, useWork: props.useWork, wide }
   // Typing while the sidebar has focus starts a search.
   const typeToSearch = (event) => {
     if (event.defaultPrevented || event.key.length !== 1 || event.key === ' ' || event.metaKey || event.ctrlKey || event.altKey || event.nativeEvent.isComposing) return
@@ -286,10 +307,7 @@ export function TeamSidebar(props) {
   }
   return h('div', {
     ref: node => { sideRef.current = node?.closest('[data-slot="sidebar"]') ?? node },
-    className: wide ? 'bt-side' : 'bt-side bt-rail', onKeyDown: typeToSearch,
-    onClick: event => {
-      if (mobile && wide && event.target.closest('.bt-row,.bt-tile,.bt-agent-sub-row')) actions.toggleSidebar()
-    } },
+    className: wide ? 'bt-side' : 'bt-side bt-rail', onKeyDown: typeToSearch },
     mobile && wide ? createPortal(h('button', {
       type: 'button', className: 'bt-sidebar-scrim', 'aria-label': t('Close'), tabIndex: -1,
       onClick: () => actions.toggleSidebar(),
@@ -400,36 +418,15 @@ function UpdateButton({ useUpdate, actions }) {
                 }, dshPhase === 'installing' ? t('Updating…') : dshPhase === 'failed' ? t('Try again') : t('Update')))) : null), document.body) : null)
 }
 
-// The footer entry to the shell's plugin panel, marked as not yet adapted: the red
-// badge and a hover tip explain that plugin support lands step by step.
+// The footer entry to the shell's plugin panel.
 export function ConnectPlugins({ wide, actions }) {
-  const tipId = useId()
-  const [tip, setTip] = useState(false)
-  const timer = useRef(0)
-  const button = useRef(null)
-  const [box, setBox] = useState(null)
-  useEffect(() => () => clearTimeout(timer.current), [])
   if (!wide) return null
-  const show = () => {
-    clearTimeout(timer.current)
-    timer.current = setTimeout(() => {
-      const rect = button.current?.getBoundingClientRect()
-      if (!rect) return
-      const left = Math.max(8, Math.min(rect.left, window.innerWidth - 268))
-      setBox({ left, bottom: window.innerHeight - rect.top + 10 })
-      setTip(true)
-    }, 250)
-  }
-  const hide = () => { clearTimeout(timer.current); setTip(false) }
   return h('span', { className: 'bt-connect-wrap' },
     h('button', {
-      ref: button, type: 'button', className: 'bt-connect bt-connect-foot', 'aria-describedby': tip ? tipId : undefined,
-      onMouseEnter: show, onMouseLeave: hide, onFocus: show, onBlur: hide,
+      type: 'button', className: 'bt-connect bt-connect-foot',
       onClick: () => actions.selectPanel('plugins'),
     },
-    h(PlugIcon), t('Connect plugins'), h('span', { className: 'bt-connect-warn', 'aria-hidden': true }, '!')),
-    tip && box ? createPortal(h('span', { role: 'tooltip', id: tipId, className: 'bt-connect-tip', style: box },
-      t('Plugin compatibility is not fully verified.')), document.body) : null)
+    h(PlugIcon), t('Connect plugins')))
 }
 
 // Account seat of the Settings trigger: the visible label stays for assistive tech only.

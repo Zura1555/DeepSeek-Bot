@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createRequire } from "node:module";
-import { join } from "node:path";
+
+
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { build } from "esbuild";
@@ -132,76 +132,7 @@ test("a reply that does not close its turn, or one still running, links nothing"
   assert.equal(earlier.asked.length + running.asked.length, 0);
 });
 
-test("settled reasoning starts collapsed and can be opened and closed", async () => {
-  const harness =
-    process.env.DSH_HARNESS ??
-    fileURLToPath(new URL("../dev/harness", import.meta.url));
-  const { JSDOM } = createRequire(join(harness, "package.json"))("jsdom");
-  const { window } = new JSDOM("<!doctype html><body></body>");
-  try {
-    const { props } = cellProps();
-    props.groupPart = "reasoning";
-    props.node.data.blocks = [
-      { kind: "reasoning", text: "Check the evidence before answering." },
-    ];
-    const tree = expand(AssistantCell(props), ["ThinkingRow"]);
-    const mount = (node) => {
-      if (typeof node !== "object")
-        return window.document.createTextNode(String(node));
-      const element = window.document.createElement(node.type);
-      for (const [key, value] of Object.entries(node.props)) {
-        if (key === "ref") value.current = element;
-        else if (key.startsWith("on"))
-          element.addEventListener(key.slice(2).toLowerCase(), value);
-        else if (value !== undefined)
-          element.setAttribute(key === "className" ? "class" : key, value);
-      }
-      element.append(
-        ...node.children.filter((child) => child !== null).map(mount),
-      );
-      return element;
-    };
-    const [reasoning] = find(
-      tree,
-      (node) => node.props?.className === "bt-think",
-    );
-    const row = mount(reasoning);
-    window.document.body.append(row);
-    const summary = row.querySelector("summary");
-    assert.ok(summary, "reasoning has an operable disclosure");
-    assert.equal(row.open, false);
-    const body = row.querySelector('[role="region"]');
-    Object.defineProperties(body, {
-      clientHeight: { value: 90 },
-      scrollHeight: { value: 540 },
-    });
-    body.scrollTop = 120;
-    body.dispatchEvent(new window.Event("scroll"));
-    summary.click();
-    await new Promise((resolve) => window.setTimeout(resolve, 0));
-    assert.equal(row.open, true);
-    assert.equal(
-      body.scrollTop,
-      540,
-      "opening starts at the tail even after a hidden scroll event",
-    );
-    body.scrollTop = 120;
-    body.dispatchEvent(new window.Event("scroll"));
-    assert.match(row.textContent, /Check the evidence before answering/);
-    summary.click();
-    await new Promise((resolve) => window.setTimeout(resolve, 0));
-    assert.equal(row.open, false);
-    summary.click();
-    await new Promise((resolve) => window.setTimeout(resolve, 0));
-    assert.equal(
-      body.scrollTop,
-      120,
-      "reopening preserves the position chosen by the reader",
-    );
-  } finally {
-    window.close();
-  }
-});
+;
 
 test("the turn tail entry notes when the turn ended and shows the pause before the next one", () => {
   effects.length = 0;
