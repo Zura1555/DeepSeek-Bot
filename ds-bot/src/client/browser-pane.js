@@ -12,6 +12,7 @@ import { SPRING_SHAPE, springEasing } from './motion.js'
 import { DetailsDrawer } from './details-drawer.js'
 import { useMobileModal } from './overlay-hooks.js'
 import { t } from './i18n.js'
+import { GlobeIcon } from './icons.js'
 
 export const PANEL_LINGER_MS = 300
 const WIDTH_KEY = STORAGE.browserWidth
@@ -37,7 +38,6 @@ const icon = paths => function BrowserIcon() {
   return h('svg', { width: 16, height: 16, viewBox: '0 0 20 20', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true },
     paths.map((d, index) => h('path', { key: index, d })))
 }
-export const GlobeIcon = icon(['M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14z', 'M3 10h14', 'M10 3c2 2.2 2.9 4.5 2.9 7S12 14.8 10 17c-2-2.2-2.9-4.5-2.9-7S8 5.2 10 3z'])
 const BackIcon = icon(['M12.5 4.5L7 10l5.5 5.5'])
 const ForwardIcon = icon(['M7.5 4.5L13 10l-5.5 5.5'])
 const ReloadIcon = icon(['M15.5 10a5.5 5.5 0 1 1-1.6-3.9', 'M15.5 3.5v3.5H12'])

@@ -35,6 +35,7 @@ const ZH = {
   Copy: '复制',
   Copied: '已复制',
   Content: '内容',
+  Sources: '来源',
   'Referenced {labels}': '引用了 {labels}',
   ', ': '、',
   You: '你',
