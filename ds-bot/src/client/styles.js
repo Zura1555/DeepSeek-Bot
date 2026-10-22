@@ -187,6 +187,16 @@ body[data-bt-motion=quiet] .bt-mark[data-poke]{cursor:default}
 .bt-bubble ul,.bt-bubble ol{margin:4px 0;padding-left:20px}
 .bt-bubble a[href^="${MENTION_ORIGIN}"]{text-decoration:none;font-weight:400;cursor:pointer;white-space:nowrap}
 .bt-bubble a[href^="${MENTION_ORIGIN}"]::before{content:"";display:inline-block;width:16px;height:16px;margin-right:3px;vertical-align:-3px;background:currentColor;-webkit-mask:${DEFAULT_MASK} center/contain no-repeat;mask:${DEFAULT_MASK} center/contain no-repeat}
+.bt-sources{margin-top:10px;padding:8px 10px;border:1px solid var(--bt-line-2);border-radius:12px;font-size:13px;line-height:20px}
+.bt-sources-label{margin-bottom:4px;color:var(--bt-ink-2);font-size:11px;font-weight:500}
+.bt-sources ul{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0;padding:0;list-style:none}
+.bt-sources li{min-width:0;max-width:100%}
+.bt-sources a{display:flex;align-items:center;gap:6px;max-width:100%;color:inherit;text-decoration:underline;text-underline-offset:3px}
+.bt-sources a:focus-visible{outline:2px solid var(--bt-accent);outline-offset:2px;border-radius:4px}
+.bt-source-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt-source-icon{position:relative;display:inline-flex;flex:none;width:16px;height:16px;color:var(--bt-ink-2)}
+.bt-source-icon img{position:absolute;inset:0;width:16px;height:16px;object-fit:contain;opacity:0}
+.bt-source-icon img[data-loaded]{opacity:1}
 .bt-group-msg{display:flex;flex-direction:column;gap:4px;margin:16px 0 0}
 .bt-group-msg:first-child{margin-top:0}
 .bt-lead{flex:none;display:flex;margin-bottom:1px}

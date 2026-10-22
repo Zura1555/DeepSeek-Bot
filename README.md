@@ -15,6 +15,8 @@ Mobile improvements are included in this fork’s [`main`](https://github.com/Zu
 
 No DSH core modifications.
 
+Bot replies with web links show a **Sources** card with dynamic website icons, including group messages and loaded history. It lists links in the displayed reply, not independently verified citations; inline Markdown icons stay unchanged. Icons load lazily from DuckDuckGo's favicon service using only the hostname, with no referrer. That service sees your IP and the requested hostname; IP addresses, single-label hosts and reserved local/test domains keep a globe without an icon request. Failed icon loads also keep a globe.
+
 ## Install this fork
 
 Requires Git, Node.js 22.19+ and pnpm. Configure a model in DSH first.

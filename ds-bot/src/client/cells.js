@@ -14,6 +14,7 @@ import { failureLabel } from './diagnostics.js'
 import { turnReasoning, thinkingStep } from './turn-reasoning.js'
 import { FOLD_AT, FOLD_HUGE, stripLongNote, useFold } from './fold.js'
 import { heldCardKey } from './sources.js'
+import { SourceMessage } from './source-card.js'
 
 export { clockLabel }
 
@@ -51,7 +52,8 @@ export function Bubbles({ texts, roster, selfId, actions, streaming, sessionId, 
 function Bubble({ text, index, roster, selfId, actions, sessionId, msgKey, mentions, fold, picked, live, lead, whole }) {
   const { shown, folded, control } = useFold(text, { limit: fold, whole, live })
   const key = msgKey ? `${msgKey}:${index}` : undefined
-  const body = h(MarkdownText, { text: linkMentions(shown, roster.bots, selfId), streaming: live, labels: mdLabels(), variant: 'compact', fileMentions: mentions })
+  const body = h(SourceMessage, { text: shown, streaming: live },
+    h(MarkdownText, { text: linkMentions(shown, roster.bots, selfId), streaming: live, labels: mdLabels(), variant: 'compact', fileMentions: mentions }))
   return h('div', { className: 'bt-msg' },
     h('div', { className: 'bt-msg-line' },
       lead,
