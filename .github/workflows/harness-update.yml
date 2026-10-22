@@ -1,0 +1,116 @@
+name: DSH Harness update proposal
+
+on:
+  schedule:
+    - cron: '41 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dsh-harness-proposal
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/mobile-bot-layout
+          fetch-depth: 0
+      - name: Read latest stable npm release
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest="$(npm view @deepseek-ai/dsh@latest version --json | tr -d '\"\r\n')"
+          if ! [[ "$latest" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "npm latest is not a stable SemVer release; refusing prerelease or malformed value." >&2
+            exit 1
+          fi
+          echo "version=$latest" >> "$GITHUB_OUTPUT"
+      - name: Prepare update branch
+        id: prepare
+        env:
+          LATEST: ${{ steps.release.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          production=feat/mobile-bot-layout
+          proposal=automation/dsh-harness-update
+          file=ds-bot/dev/harness/package.json
+          git fetch --no-tags origin "$production"
+          if git ls-remote --exit-code --heads origin "$proposal" >/dev/null 2>&1; then
+            git fetch --no-tags origin "$proposal"
+            git switch --create "$proposal" FETCH_HEAD
+            git merge --no-edit "origin/$production"
+          else
+            git switch --create "$proposal" "origin/$production"
+          fi
+          current="$(node -p "JSON.parse(require('fs').readFileSync('$file','utf8')).dependencies['@deepseek-ai/dsh']")"
+          update=$(node - "$current" "$LATEST" <<'NODE'
+          const [current, latest] = process.argv.slice(2)
+          const core = value => value.split(/[+-]/, 1)[0].split('.').map(Number)
+          const a = core(current)
+          const b = core(latest)
+          let order = 0
+          for (let i = 0; i < 3 && order === 0; i++) order = Math.sign(b[i] - a[i])
+          const hasPrerelease = value => value.split('+', 1)[0].includes('-')
+          if (order === 0 && hasPrerelease(current) && !hasPrerelease(latest)) order = 1
+          process.stdout.write(order > 0 ? 'yes' : 'no')
+          NODE
+          )
+          if [ "$update" != yes ]; then
+            echo "No newer stable Harness release than $current; no proposal needed."
+            exit 0
+          fi
+          node - "$file" "$LATEST" <<'NODE'
+          const fs = require('node:fs')
+          const [file, version] = process.argv.slice(2)
+          const pkg = JSON.parse(fs.readFileSync(file, 'utf8'))
+          pkg.dependencies['@deepseek-ai/dsh'] = version
+          fs.writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`)
+          NODE
+          npm install --package-lock-only --prefix ds-bot/dev/harness --ignore-scripts --legacy-peer-deps=false --no-fund --no-audit
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$file" ds-bot/dev/harness/package-lock.json
+          git commit -m "Propose DSH Harness $LATEST"
+          git push origin "HEAD:refs/heads/$proposal"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "branch=$proposal" >> "$GITHUB_OUTPUT"
+      - name: Create or update proposal PR
+        if: steps.prepare.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          GH_OWNER: ${{ github.repository_owner }}
+          CURRENT: ${{ steps.prepare.outputs.current }}
+          LATEST: ${{ steps.release.outputs.version }}
+          BRANCH: ${{ steps.prepare.outputs.branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          body="$RUNNER_TEMP/harness-update.md"
+          cat > "$body" <<EOF
+          ## Proposed stable DSH Harness update
+
+          - Current test pin: @deepseek-ai/dsh@$CURRENT
+          - npm latest stable release: @deepseek-ai/dsh@$LATEST
+          - Release: https://www.npmjs.com/package/@deepseek-ai/dsh/v/$LATEST
+
+          Compatibility gate: fork CI checks the matching DSH source tag (`dsh-v$LATEST`) and all tests; a missing tag or failing check blocks approval. Prereleases are ignored.
+
+          This proposal updates only the DS Bot test/lint Harness version and its npm lockfile. It does not modify the VPS systemd Harness version or deploy anything.
+          EOF
+          pr=$(gh pr list --repo "$GH_REPO" --base feat/mobile-bot-layout --head "$GH_OWNER:$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$pr" ]; then
+            gh pr edit "$pr" --repo "$GH_REPO" --title "Propose DSH Harness $LATEST" --body-file "$body"
+          else
+            gh pr create --repo "$GH_REPO" --base feat/mobile-bot-layout --head "$BRANCH" --title "Propose DSH Harness $LATEST" --body-file "$body"
+          fi

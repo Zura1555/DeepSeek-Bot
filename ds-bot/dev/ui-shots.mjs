@@ -91,11 +91,11 @@ let state = await api('state', {})
 const main = state.bots.find(bot => bot.id === state.mainBotId)
 if (main && !main.model) {
   await openRow(`.bt-tile[data-bot-id="${main.id}"]`)
-  const card = page.locator('.bt-model-card')
+  const card = page.locator('.bt-model-chips')
   check(await card.waitFor({ timeout: 30_000 }).then(() => true, () => false), `${main.name} opens on a model card`)
   await page.waitForTimeout(600)
   await shot('model-card')
-  await card.locator('.bt-model-opt').first().click()
+  await card.locator('.bt-model-chip').first().click()
   check(await card.waitFor({ state: 'detached', timeout: 30_000 }).then(() => true, () => false), 'the model card goes once a model is picked')
   check(await page.getByText('先让团队帮你做哪块', { exact: false }).last().waitFor({ timeout: 60_000 }).then(() => true, () => false), `${main.name} greets and asks after the pick`)
   await page.waitForTimeout(1500)
@@ -111,6 +111,7 @@ const coder = state.bots.find(bot => bot.name === 'Coder')
 let room = state.rooms.find(candidate => candidate.members.includes(writer.id) && candidate.members.includes(coder.id))
 room ??= await api('create-room', { members: [writer.id, coder.id] })
 const writerRow = `.bt-row[data-bot-id="${writer.id}"]`
+const coderRow = `.bt-row[data-bot-id="${coder.id}"]`
 await page.locator(writerRow).first().waitFor({ timeout: 30_000 })
 await page.locator(`.bt-row[data-room-id="${room.id}"]`).first().waitFor({ timeout: 30_000 })
 await api('set-flags', { id: writer.id, pinned: true })
@@ -125,7 +126,7 @@ await page.waitForTimeout(1500)
 await shot('private-chat')
 
 await page.getByRole('button', { name: 'View conversation details' }).first().click()
-const trigger = page.locator('.bt-panel .bt-model-trigger')
+const trigger = page.locator('.bt-panel .bt-model-trigger').first()
 check(await trigger.waitFor({ timeout: 10_000 }).then(() => true, () => false), 'the details panel shows the model picker')
 await page.waitForTimeout(600)
 await trigger.click()
@@ -150,7 +151,7 @@ await send('团队记住 周报在周五下午五点前交')
 check(await waits(page.getByText('没记成：Only Main Bots and group admins write the team memory', { exact: false }).last()), 'a Bot that is neither a Main Bot nor a group admin cannot write the team memory')
 await page.waitForTimeout(1200)
 await shot('memory-saved')
-await openRow(`.bt-tile[data-bot-id="${state.mainBotId}"]`)
+await openRow(`.bt-tile[data-bot-id="${main.id}"]`)
 await send('团队记住 周报在周五下午五点前交')
 check(await waits(page.locator('.bt-event button', { hasText: 'Team memory updated' }).last()), 'the Main Bot writes the team memory, and the chat says so')
 await page.waitForTimeout(1200)
@@ -220,7 +221,7 @@ await page.getByRole('menuitem', { name: 'Edit Bot' }).click()
 await page.locator('.bt-settings').waitFor({ timeout: 10_000 })
 await page.waitForTimeout(800)
 await shot('bot-settings')
-check(await page.locator('.bt-settings .bt-model-trigger').count() === 1, 'Bot settings show the model picker')
+check(await page.locator('.bt-settings .bt-model-trigger[aria-label^="Model:"]').count() === 1, 'Bot settings show the model picker')
 await page.locator('.bt-settings-scroll').evaluate(node => { node.scrollTop = node.scrollHeight })
 await page.waitForTimeout(400)
 await shot('bot-settings-end')
@@ -298,10 +299,56 @@ await page.waitForTimeout(400)
 
 await openRow(writerRow)
 await page.getByRole('button', { name: 'View conversation details' }).first().click()
-await page.locator('.bt-panel .bt-model-trigger').click()
+await page.locator('.bt-panel .bt-model-trigger').first().click()
 await page.locator('.bt-model-menu').getByRole('menuitem', { name: 'Models and providers…' }).click()
 check(await harness.waitFor({ timeout: 10_000 }).then(() => true, () => false), 'Models and providers… opens DeepSeek Harness settings')
 await page.keyboard.press('Escape')
+
+if (mode === 'web') {
+  for (const { width, row } of [
+    { width: 390, row: coderRow },
+    { width: 768, row: writerRow },
+    { width: 1280, row: coderRow },
+  ]) {
+    await page.setViewportSize({ width, height: 860 })
+    await page.waitForTimeout(300)
+    const mobile = width <= 768
+    check(await page.locator('.bt-mobile-menu').isVisible() === mobile, `${width}px uses the expected mobile navigation`)
+    check(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${width}px has no horizontal page overflow`)
+
+    if (mobile) {
+      const sidebarScrim = page.locator('.bt-sidebar-scrim')
+      await page.locator('.bt-mobile-menu').click()
+      check(await sidebarScrim.isVisible(), `${width}px opens the sidebar drawer`)
+      await page.locator(row).click()
+      check(await sidebarScrim.waitFor({ state: 'hidden', timeout: 5_000 }).then(() => true, () => false), `${width}px closes the sidebar after bot selection`)
+    } else {
+      await page.locator(row).click()
+    }
+    const selectedRow = page.locator(row)
+    check(await selectedRow.waitFor({ state: 'attached', timeout: 5_000 }).then(() => selectedRow.getAttribute('aria-current')).then(value => value === 'page', () => false), `${width}px switches to the selected Bot`)
+
+    if (mobile) {
+      await page.locator('.bt-mobile-menu').click()
+      await page.locator('.bt-account').click()
+      await page.getByRole('menuitem', { name: 'Bot settings', exact: true }).click()
+      const mobileNav = page.locator('.bt-settings-mobile-nav')
+      check(await mobileNav.isVisible(), `${width}px shows the mobile settings navigation`)
+      await mobileNav.selectOption('bots')
+      check(await page.getByRole('heading', { name: 'Bots', exact: true }).waitFor({ timeout: 5_000 }).then(() => true, () => false), `${width}px navigates to Bot settings`)
+      await page.locator('.bt-settings-close').click()
+      await page.locator('.bt-settings').waitFor({ state: 'detached', timeout: 5_000 }).catch(() => {})
+      const sidebarClose = page.locator('.bt-sidebar-close')
+      if (await sidebarClose.count()) await sidebarClose.click()
+      check(await page.locator('.bt-sidebar-scrim').waitFor({ state: 'hidden', timeout: 5_000 }).then(() => true, () => false), `${width}px closes the settings navigation drawer`)
+      if (width === 768) {
+        await send('你好，移动聊天输入正常吗？')
+        check(await page.getByText('收到：你好', { exact: false }).last().waitFor({ timeout: 30_000 }).then(() => true, () => false), '768px sends and receives a chat message')
+      }
+    }
+    await shot(`${width}px-layout`)
+  }
+}
 
 await browser.close()
 console.log(failures.length ? `ui shots (${mode}): ${failures.length} failed` : `ui shots (${mode}): all passed`)

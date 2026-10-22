@@ -1,0 +1,73 @@
+name: Upstream sync
+
+on:
+  schedule:
+    - cron: '23 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/mobile-bot-layout
+          fetch-depth: 0
+      - name: Fetch and compare upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          production=feat/mobile-bot-layout
+          sync_branch=automation/upstream-sync
+          git remote add upstream https://github.com/Fei2411/DeepSeek-Bot.git
+          git fetch --no-tags upstream main
+          git fetch --no-tags origin "$production"
+          upstream_sha=$(git rev-parse upstream/main)
+          production_sha=$(git rev-parse "origin/$production")
+
+          if git merge-base --is-ancestor "$upstream_sha" "$production_sha"; then
+            echo "Upstream main is already contained in $production."
+            exit 0
+          fi
+          missing=$(git rev-list --count "$production_sha..$upstream_sha")
+
+          git switch --detach "$production_sha"
+          conflicts=''
+          if git merge --no-commit --no-ff "$upstream_sha"; then
+            git merge --abort
+          else
+            conflicts=$(git diff --name-only --diff-filter=U)
+            git merge --abort
+            [ -n "$conflicts" ] || { echo 'Merge check failed without a conflict list.' >&2; exit 1; }
+          fi
+
+          # The PR branch mirrors upstream main. GitHub computes mergeability against the
+          # production branch; this avoids inventing a conflict resolution or force-pushing.
+          git push origin "$upstream_sha:refs/heads/$sync_branch"
+          git checkout "$production"
+          if [ -n "$conflicts" ]; then
+            conflict_report=$(printf '\nConflicts against `%s`:\n\n%s\n\nThe PR remains unmerged. Resolve these files in the PR branch; this workflow does not choose a side.' "$production" "$conflicts")
+          else
+            conflict_report='\nNo merge conflicts were found in the local three-way merge check.'
+          fi
+          body=$(mktemp)
+          printf 'Daily proposal to merge upstream `main` into `%s`.\n\n- Upstream commit: `%s`\n- Missing upstream commits: `%s`%b\n\nCI runs on this PR. It is never auto-merged or deployed before review.' "$production" "$upstream_sha" "$missing" "$conflict_report" > "$body"
+          pr=$(gh pr list --repo "$GH_REPO" --base "$production" --head "${GITHUB_REPOSITORY_OWNER}:$sync_branch" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$pr" ]; then
+            gh pr edit "$pr" --repo "$GH_REPO" --title "Sync upstream main into $production" --body-file "$body"
+            echo "Updated sync PR #$pr."
+          else
+            gh pr create --repo "$GH_REPO" --base "$production" --head "$sync_branch" --title "Sync upstream main into $production" --body-file "$body"
+          fi

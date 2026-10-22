@@ -1,0 +1,82 @@
+name: Deploy production
+
+on:
+  workflow_run:
+    workflows: [Fork CI]
+    types: [completed]
+    branches: [feat/mobile-bot-layout]
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: ds-bot-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'feat/mobile-bot-layout'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Download artifact from the successful CI run
+        uses: actions/download-artifact@v4
+        with:
+          name: ds-bot-release
+          path: ${{ runner.temp }}/release-artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Verify tested commit and artifact
+        env:
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          bundle="$RUNNER_TEMP/release-artifact/ds-bot-release.tar.gz"
+          test -s "$bundle"
+          mkdir -p "$RUNNER_TEMP/release"
+          tar -xzf "$bundle" -C "$RUNNER_TEMP/release"
+          printf '%s\n' "$TESTED_SHA" | cmp -s - "$RUNNER_TEMP/release/commit.txt"
+          cd "$RUNNER_TEMP/release"
+          [[ $(wc -l < SHA256SUMS) -eq 3 ]]
+          sha256sum plugin.tgz deploy.sh rollback.sh | cmp -s - SHA256SUMS
+          sha256sum --check --status SHA256SUMS
+      - name: Deploy through restricted SSH
+        env:
+          VPS_SSH_HOST: ${{ vars.VPS_SSH_HOST }}
+          VPS_SSH_PORT: ${{ vars.VPS_SSH_PORT }}
+          VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$VPS_SSH_HOST" =~ ^[A-Za-z0-9.-]+$ ]] || { echo 'VPS_SSH_HOST must be a DNS name or IPv4 address.' >&2; exit 1; }
+          port=${VPS_SSH_PORT:-22}
+          [[ "$port" =~ ^[0-9]+$ ]] && (( port > 0 && port <= 65535 )) || { echo 'VPS_SSH_PORT is invalid.' >&2; exit 1; }
+          test -n "$VPS_DEPLOY_KEY" && test -n "$VPS_KNOWN_HOSTS"
+          key_file="$RUNNER_TEMP/vps-deploy-key"
+          known_hosts_file="$RUNNER_TEMP/vps-known-hosts"
+          umask 077
+          printf '%s\n' "$VPS_DEPLOY_KEY" > "$key_file"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$known_hosts_file"
+          trap 'rm -f "$key_file" "$known_hosts_file"' EXIT
+          ssh \
+            -i "$key_file" \
+            -p "$port" \
+            -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile="$known_hosts_file" \
+            -o StrictHostKeyChecking=yes \
+            -o PasswordAuthentication=no \
+            -o KbdInteractiveAuthentication=no \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o ServerAliveInterval=10 \
+            -o ServerAliveCountMax=3 \
+            "ubuntu@$VPS_SSH_HOST" "deploy $TESTED_SHA" \
+            < "$RUNNER_TEMP/release-artifact/ds-bot-release.tar.gz"
